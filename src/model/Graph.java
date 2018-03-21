@@ -1,3 +1,5 @@
+package model;
+
 import java.util.List;
 
 /**
@@ -13,6 +15,12 @@ public class Graph {
         this.vertexNumber = vertexNumber;
         edges = new int[vertexNumber][vertexNumber];
         weights = new int[vertexNumber][vertexNumber];
+    }
+
+    public Graph(int[][] edges, int[][] weights) {
+        this.edges = edges;
+        this.weights = weights;
+        this.vertexNumber = edges.length;
     }
 
     //устанавливает ребро между i-ой и j-ой вершинами и назначает вес ребру.

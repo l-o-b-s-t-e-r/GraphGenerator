@@ -1,28 +1,13 @@
-import java.util.*;
+package utils;
+
+import model.Graph;
 
 /**
- * Created by Lobster on 14.03.18.
+ * Created by Lobster on 15.03.18.
  */
-public class GraphGenerator {
+public class GraphConverter {
 
     //чтобы не путаться: первый индекс строка, второй индекс столбец - new int[строка][столбец]
-
-    private final Integer MAX_EDGE_WEIGHT = 10; // максимальный вес ребра
-    private Random random = new Random();
-
-    //генерит рандомный граф
-    public Graph generate(int vertexNumber) {
-        Graph graph = new Graph(vertexNumber);
-        for (int i = 0; i < vertexNumber - 1; i++) {
-            for (int j = i + 1; j < vertexNumber; j++) {
-                if (random.nextBoolean()) {
-                    graph.setEdge(i, j, random.nextInt(MAX_EDGE_WEIGHT) + 1);
-                }
-            }
-        }
-
-        return graph;
-    }
 
     //вектор f - это коэффициенты при иксах нашей функции, которую мы будем минимизировать
     public int[] createVectorF(int routesNumber, Graph graph) {
@@ -30,7 +15,7 @@ public class GraphGenerator {
         for (int k = 0; k < routesNumber; k++) {
             for (int i = 0; i < graph.getVertexNumber(); i++) {
                 for (int j = 0; j < graph.getVertexNumber(); j++) {
-                    f[j + i * graph.getVertexNumber()] = graph.getEdgeWeight(i, j);
+                    f[k * graph.getTotalElementsNumber() + j + i * graph.getVertexNumber()] = graph.getEdgeWeight(i, j);
                 }
             }
         }
@@ -103,9 +88,9 @@ public class GraphGenerator {
                 }
 
                 if (pairs[k][0] == i) {
-                    beq[i + k * graph.getVertexNumber()] = 1;
+                    beq[i + k * kMatrixAeq.length] = 1;
                 } else if (pairs[k][1] == i) {
-                    beq[i + k * graph.getVertexNumber()] = -1;
+                    beq[i + k * kMatrixAeq.length] = -1;
                 }
             }
 
@@ -125,7 +110,11 @@ public class GraphGenerator {
             System.arraycopy(secondRestrictionAeq, 0, kMatrixAeq, firstRestrictionAeq.length, secondRestrictionAeq.length);
             System.arraycopy(thirdRestrictionAeq, 0, kMatrixAeq, firstRestrictionAeq.length + secondRestrictionAeq.length, thirdRestrictionAeq.length);
 
-            System.arraycopy(kMatrixAeq, 0, matrixAeq, k * kMatrixAeq.length, kMatrixAeq.length);
+            for (int i = 0; i < kMatrixAeq.length; i++) {
+                for (int j = 0; j < kMatrixAeq[i].length; j++) {
+                    matrixAeq[k * kMatrixAeq.length + i][k * kMatrixAeq[i].length + j] = kMatrixAeq[i][j];
+                }
+            }
         }
 
         return matrixAeq;
@@ -138,92 +127,31 @@ public class GraphGenerator {
         return new int[routesNumber * (graph.getVertexNumber() + 2)];
     }
 
-    //генерит маршруты
-    public int[][] createRoutes(int routesNumber, Graph graph) {
-        int pairs[][] = new int[routesNumber][2];
-        for (int i = 0; i < routesNumber; i++) {
-            pairs[i][0] = random.nextInt(graph.getVertexNumber());
-            pairs[i][1] = random.nextInt(graph.getVertexNumber());
+    public static String toString(int[][] matrix) {
+        StringBuilder matrixStr = new StringBuilder("[");
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[i].length - 1; j++) {
+                matrixStr.append(matrix[i][j]).append(",");
+            }
+
+            matrixStr.append(matrix[i][matrix[i].length - 1]);
+            if (i != matrix.length - 1) {
+                matrixStr.append(";");
+            }
         }
 
-        return pairs;
+        matrixStr.append("]");
+        return matrixStr.toString();
     }
 
-    public Graph getMockGraph5() {
-        Graph graph = new Graph(5);
+    public static String toString(int[] vector) {
+        StringBuilder vectorStr = new StringBuilder("[");
+        for (int i = 0; i < vector.length - 1; i++) {
+            vectorStr.append(vector[i]).append(";");
+        }
 
-        graph.setEdges(new int[][]{
-                {0, 1, 1, 0, 0},
-                {1, 0, 1, 1, 0},
-                {1, 1, 0, 1, 1},
-                {0, 1, 1, 0, 1},
-                {0, 0, 1, 1, 0},
-        });
-
-        graph.setWeights(new int[][]{
-                {0, 3, 2, 0, 0},
-                {3, 0, 4, 5, 0},
-                {2, 4, 0, 6, 7},
-                {0, 5, 6, 0, 1},
-                {0, 0, 7, 1, 0},
-        });
-
-        return graph;
+        vectorStr.append(vector[vector.length - 1]).append("]");
+        return vectorStr.toString();
     }
 
-    /*public Graph getMockGraph3() {
-        Graph graph = new Graph(3);
-
-        graph.setEdges(new int[][]{
-                {0, 1, 1},
-                {1, 0, 1},
-                {1, 1, 0}
-        });
-
-        graph.setWeights(new int[][]{
-                {0, 5, 10},
-                {5, 0, 6},
-                {10, 6, 0}
-        });
-
-        return graph;
-    }
-
-    public int[][] getMockPairs3() {
-        return new int[][]{
-                {0, 2}
-        };
-    }*/
-
-    public Graph getMockGraph3() {
-        Graph graph = new Graph(3);
-
-        graph.setEdges(new int[][]{
-                {0, 1, 0},
-                {1, 0, 1},
-                {0, 1, 0}
-        });
-
-        graph.setWeights(new int[][]{
-                {0, 1, 0},
-                {1, 0, 1},
-                {0, 1, 0}
-        });
-
-        return graph;
-    }
-
-    public int[][] getMockPairs3() {
-        return new int[][]{
-                {0, 2}
-        };
-    }
-
-    public int[][] getMockRoutes5() {
-        return new int[][]{
-                {0, 4}//,
-                //{0, 3},
-                //{1, 4}
-        };
-    }
 }
