@@ -101,9 +101,9 @@ public class MockGraphGenerator implements IGraphGenerator {
         };
 
         weights = new int[][]{
-                {0, 1, 3},
-                {1, 0, 1},
-                {3, 1, 0}
+                {0, 2, 6},
+                {2, 0, 3},
+                {6, 3, 0}
         };
 
         routes = new int[][]{

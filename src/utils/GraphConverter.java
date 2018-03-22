@@ -94,10 +94,10 @@ public class GraphConverter {
                 }
             }
 
-            int secondRestrictionAeq[][] = new int[1][graph.getTotalElementsNumber()];
+            /*int secondRestrictionAeq[][] = new int[1][graph.getTotalElementsNumber()];
             for (int i = 0; i < secondRestrictionAeq[0].length; i += graph.getVertexNumber() + 1) {
                 secondRestrictionAeq[0][i] = 1;
-            }
+            }*/
 
             int thirdRestrictionAeq[][] = new int[1][graph.getTotalElementsNumber()];
             for (int i = 0; i < graph.getEdges().length; i++) {
@@ -107,8 +107,8 @@ public class GraphConverter {
             }
 
             System.arraycopy(firstRestrictionAeq, 0, kMatrixAeq, 0, firstRestrictionAeq.length);
-            System.arraycopy(secondRestrictionAeq, 0, kMatrixAeq, firstRestrictionAeq.length, secondRestrictionAeq.length);
-            System.arraycopy(thirdRestrictionAeq, 0, kMatrixAeq, firstRestrictionAeq.length + secondRestrictionAeq.length, thirdRestrictionAeq.length);
+            //System.arraycopy(secondRestrictionAeq, 0, kMatrixAeq, firstRestrictionAeq.length, secondRestrictionAeq.length);
+            System.arraycopy(thirdRestrictionAeq, 0, kMatrixAeq, firstRestrictionAeq.length, thirdRestrictionAeq.length);
 
             for (int i = 0; i < kMatrixAeq.length; i++) {
                 for (int j = 0; j < kMatrixAeq[i].length; j++) {
@@ -124,7 +124,7 @@ public class GraphConverter {
     //т.е. эти уравнения имеют вид х1 + х2 = число. Матрица Aeq, представляет из себя коэфициенты при х(иксах),
     //а матрица Beq представляет результат уравнения, т.е. правую часть.
     public int[] createVectorBeq(int routesNumber, Graph graph) {
-        return new int[routesNumber * (graph.getVertexNumber() + 2)];
+        return new int[routesNumber * (graph.getVertexNumber() + 1)];
     }
 
     public static String toString(int[][] matrix) {
@@ -168,6 +168,20 @@ public class GraphConverter {
         }
 
         matrixStr.append("\n]");
+        return matrixStr.toString();
+    }
+
+    public static String graphToString(Graph graph) {
+        StringBuilder matrixStr = new StringBuilder("[\n");
+        for (int i = 0; i < graph.getVertexNumber(); i++) {
+            for (int j = i; j < graph.getVertexNumber(); j++) {
+                if (graph.isEdgeExist(i, j)) {
+                    matrixStr.append(i + 1).append("->").append(j + 1).append(" = ").append(graph.getWeights()[i][j]).append(";\n");
+                }
+            }
+        }
+
+        matrixStr.append("]");
         return matrixStr.toString();
     }
 }

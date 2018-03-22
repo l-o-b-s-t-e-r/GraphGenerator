@@ -13,7 +13,6 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Arrays;
 
 /**
  * Created by Lobster on 21.03.18.
@@ -37,7 +36,7 @@ public class MainForm extends JFrame {
 
     public MainForm() {
         setTitle("GraphGenerator");
-        setSize(1000, 600);
+        setSize(1000, 700);
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         setLocation(dim.width / 2 - this.getSize().width / 2, dim.height / 2 - this.getSize().height / 2);
         setContentPane(panel1);
@@ -188,6 +187,7 @@ public class MainForm extends JFrame {
         }
 
         mathRepresentationView.append("Graph = " + GraphConverter.toString(problem.getGraph().getWeights()) + ";\n\n");
+        mathRepresentationView.append("Graph = " + GraphConverter.graphToString(problem.getGraph()) + ";\n\n");
         mathRepresentationView.append("Routes = " + GraphConverter.routesToString(problem.getRoutes()) + ";\n\n");
         mathRepresentationView.append("==================================================================\n\n");
 
