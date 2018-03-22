@@ -128,7 +128,7 @@ public class GraphConverter {
     }
 
     public static String toString(int[][] matrix) {
-        StringBuilder matrixStr = new StringBuilder("[");
+        StringBuilder matrixStr = new StringBuilder("[\n");
         for (int i = 0; i < matrix.length; i++) {
             for (int j = 0; j < matrix[i].length - 1; j++) {
                 matrixStr.append(matrix[i][j]).append(",");
@@ -136,11 +136,11 @@ public class GraphConverter {
 
             matrixStr.append(matrix[i][matrix[i].length - 1]);
             if (i != matrix.length - 1) {
-                matrixStr.append(";");
+                matrixStr.append(";\n");
             }
         }
 
-        matrixStr.append("]");
+        matrixStr.append("\n]");
         return matrixStr.toString();
     }
 
@@ -154,4 +154,20 @@ public class GraphConverter {
         return vectorStr.toString();
     }
 
+    public static String routesToString(int[][] matrix) {
+        StringBuilder matrixStr = new StringBuilder("[\n");
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[i].length - 1; j++) {
+                matrixStr.append(matrix[i][j] + 1).append("->");
+            }
+
+            matrixStr.append(matrix[i][matrix[i].length - 1] + 1);
+            if (i != matrix.length - 1) {
+                matrixStr.append(";\n");
+            }
+        }
+
+        matrixStr.append("\n]");
+        return matrixStr.toString();
+    }
 }
