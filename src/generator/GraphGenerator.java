@@ -1,10 +1,9 @@
 package generator;
 
-import generator.IGraphGenerator;
 import model.Graph;
 import model.Problem;
 
-import java.util.*;
+import java.util.Random;
 
 /**
  * Created by Lobster on 14.03.18.
@@ -28,9 +27,17 @@ public class GraphGenerator implements IGraphGenerator {
         }
 
         int routes[][] = new int[routesNumber][2];
+        int startVertex, endVertex;
         for (int i = 0; i < routesNumber; i++) {
-            routes[i][0] = random.nextInt(vertexNumber);
-            routes[i][1] = random.nextInt(vertexNumber);
+            startVertex = random.nextInt(vertexNumber);
+
+            do {
+                endVertex = random.nextInt(vertexNumber);
+            }
+            while (endVertex == startVertex);
+
+            routes[i][0] = startVertex;
+            routes[i][1] = endVertex;
         }
 
         return new Problem(graph, routes);
