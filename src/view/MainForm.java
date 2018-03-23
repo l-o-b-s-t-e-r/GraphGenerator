@@ -29,6 +29,7 @@ public class MainForm extends JFrame {
     private JButton parseButton;
 
     private GraphConverter converter = new GraphConverter();
+    private String mathLabProblem = "";
 
     public static void main(String[] args) {
         new MainForm();
@@ -73,17 +74,19 @@ public class MainForm extends JFrame {
                     return;
                 }
 
-                mathRepresentationView.append(String.format("intcon = [1,%d];\n\n", mathRepresentation.getF().length));
-                mathRepresentationView.append("f = " + GraphConverter.toString(mathRepresentation.getF()) + ";\n\n");
-                mathRepresentationView.append("A = " + GraphConverter.toString(mathRepresentation.getA()) + ";\n\n");
-                mathRepresentationView.append("b = " + GraphConverter.toString(mathRepresentation.getB()) + ";\n\n");
-                mathRepresentationView.append("Aeq = " + GraphConverter.toString(mathRepresentation.getAeq()) + ";\n\n");
-                mathRepresentationView.append("beq = " + GraphConverter.toString(mathRepresentation.getBeq()) + ";\n\n");
+                mathLabProblem = String.format("intcon = [1,%d];\n\n", mathRepresentation.getF().length);
+                mathLabProblem += "f = " + GraphConverter.toString(mathRepresentation.getF()) + ";\n\n";
+                mathLabProblem += "A = " + GraphConverter.toString(mathRepresentation.getA()) + ";\n\n";
+                mathLabProblem += "b = " + GraphConverter.toString(mathRepresentation.getB()) + ";\n\n";
+                mathLabProblem += "Aeq = " + GraphConverter.toString(mathRepresentation.getAeq()) + ";\n\n";
+                mathLabProblem += "beq = " + GraphConverter.toString(mathRepresentation.getBeq()) + ";\n\n";
 
-                mathRepresentationView.append(String.format("lb = zeros(%d,1)\n\n", mathRepresentation.getF().length));
-                mathRepresentationView.append(String.format("ub = ones(%d,1)\n\n", mathRepresentation.getF().length));
+                mathLabProblem += String.format("lb = zeros(%d,1)\n\n", mathRepresentation.getF().length);
+                mathLabProblem += String.format("ub = ones(%d,1)\n\n", mathRepresentation.getF().length);
 
-                mathRepresentationView.append("x = intlinprog(f,intcon,A,b,Aeq,beq,lb,ub)");
+                mathLabProblem += "x = intlinprog(f,intcon,A,b,Aeq,beq,lb,ub)";
+
+                mathRepresentationView.append(mathLabProblem);
             }
         });
 
@@ -115,7 +118,7 @@ public class MainForm extends JFrame {
         copyButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                StringSelection stringSelection = new StringSelection(mathRepresentationView.getText());
+                StringSelection stringSelection = new StringSelection(mathLabProblem);
                 Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
                 clipboard.setContents(stringSelection, null);
             }

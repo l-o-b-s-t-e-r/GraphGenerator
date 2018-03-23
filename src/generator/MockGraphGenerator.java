@@ -218,9 +218,9 @@ public class MockGraphGenerator implements IGraphGenerator {
 
         weights = new int[][]{
                 {0, 9, 1, 0, 0},
-                {9, 0, 6, 1, 0},
-                {1, 6, 0, 7, 1},
-                {0, 1, 7, 0, 1},
+                {9, 0, 1, 8, 0},
+                {1, 1, 0, 1, 1},
+                {0, 8, 1, 0, 1},
                 {0, 0, 1, 1, 0},
         };
 
@@ -241,7 +241,7 @@ public class MockGraphGenerator implements IGraphGenerator {
 
         weights = new int[][]{
                 {0, 9, 1, 0, 0},
-                {9, 0, 1, 1, 0},
+                {9, 0, 1, 8, 0},
                 {1, 1, 0, 1, 1},
                 {0, 8, 1, 0, 1},
                 {0, 0, 1, 1, 0},
