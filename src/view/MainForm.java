@@ -5,7 +5,10 @@ import generator.IGraphGenerator;
 import generator.MockGraphGenerator;
 import model.MathRepresentation;
 import model.Problem;
+import model.ShortestPaths;
+import model.Vertex;
 import utils.GraphConverter;
+import utils.GraphSolver;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,11 +16,12 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 /**
  * Created by Lobster on 21.03.18.
  */
-public class MainForm extends JFrame {
+public class MainForm extends JFrame implements SolverCallback {
     private JPanel panel1;
     private JTextArea mathRepresentationView;
     private JButton copyButton;
@@ -25,11 +29,14 @@ public class MainForm extends JFrame {
     private JTextField routesNumber;
     private JCheckBox mockCheckBox;
     private JButton generateButton;
-    private JTextArea solutionView;
+    private JTextArea mathLabSolutionView;
     private JButton parseButton;
+    private JTextArea solutionView;
 
     private GraphConverter converter = new GraphConverter();
+    private GraphSolver solver = new GraphSolver(this);
     private String mathLabProblem = "";
+
 
     public static void main(String[] args) {
         new MainForm();
@@ -60,8 +67,15 @@ public class MainForm extends JFrame {
                     return;
                 }
 
+                IGraphGenerator generator = mockCheckBox.isSelected() ? new MockGraphGenerator() : new GraphGenerator();
+
+                Problem problem = generator.generate(
+                        Integer.valueOf(verticesNumber.getText().trim()),
+                        Integer.valueOf(routesNumber.getText().trim())
+                );
+
                 MathRepresentation mathRepresentation = calculate(
-                        mockCheckBox.isSelected() ? new MockGraphGenerator() : new GraphGenerator(),
+                        problem,
                         Integer.valueOf(verticesNumber.getText().trim()),
                         Integer.valueOf(routesNumber.getText().trim())
                 );
@@ -73,6 +87,8 @@ public class MainForm extends JFrame {
                             JOptionPane.ERROR_MESSAGE);
                     return;
                 }
+
+                startAlgorithm(problem);
 
                 mathLabProblem = String.format("intcon = [1,%d];\n\n", mathRepresentation.getF().length);
                 mathLabProblem += "f = " + GraphConverter.toString(mathRepresentation.getF()) + ";\n\n";
@@ -93,8 +109,9 @@ public class MainForm extends JFrame {
         parseButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String solution = solutionView.getText().replace(" ", "");
+                String solution = mathLabSolutionView.getText().replace(" ", "");
                 solution = solution.replace("\n", "");
+                mathLabSolutionView.setText("");
                 solutionView.setText("");
 
                 char solutionsAsArray[] = solution.toCharArray();
@@ -109,8 +126,8 @@ public class MainForm extends JFrame {
                         }
                     }
 
-                    solutionView.append(parseSolution(solutionAsMatrix));
-                    solutionView.append("\n");
+                    mathLabSolutionView.append(parseSolution(solutionAsMatrix));
+                    mathLabSolutionView.append("\n");
                 }
             }
         });
@@ -123,6 +140,27 @@ public class MainForm extends JFrame {
                 clipboard.setContents(stringSelection, null);
             }
         });
+    }
+
+    private void startAlgorithm(final Problem problem) {
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                ShortestPaths shortestPaths = solver.findShortestPaths(problem, new ArrayList<ShortestPaths>(), null, 0);
+
+                if (shortestPaths == null) {
+                    solutionView.append("There is no solution :(");
+                } else {
+                    solutionView.append("Solution has been found!" + "\n");
+                    solutionView.append("F = " + solver.findFunctionValueForPaths(problem.getGraph(), shortestPaths) + "\n");
+                    for (Vertex path : shortestPaths.getPaths()) {
+                        solutionView.append(path.toString() + "\n");
+                    }
+                }
+            }
+        });
+
+        t.start();
     }
 
     private String parseSolution(int solution[][]) {
@@ -183,8 +221,7 @@ public class MainForm extends JFrame {
     }
 
 
-    private MathRepresentation calculate(IGraphGenerator generator, int vertexNumber, int routesNumber) {
-        Problem problem = generator.generate(vertexNumber, routesNumber);
+    private MathRepresentation calculate(Problem problem, int vertexNumber, int routesNumber) {
         if (problem == null) {
             return null;
         }
@@ -202,6 +239,16 @@ public class MainForm extends JFrame {
 
 
         return new MathRepresentation(f, A, b, beq, Aeq);
+    }
+
+    @Override
+    public void onIteration(int k) {
+        solutionView.append("Iteration: " + k + "\n");
+    }
+
+    @Override
+    public void onFinish() {
+
     }
 
     {
@@ -241,7 +288,7 @@ public class MainForm extends JFrame {
         mockCheckBox.setText("Mock");
         panel3.add(mockCheckBox, new com.intellij.uiDesigner.core.GridConstraints(2, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         generateButton = new JButton();
-        generateButton.setText("Generate!");
+        generateButton.setText("Start!");
         panel3.add(generateButton, new com.intellij.uiDesigner.core.GridConstraints(2, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel4 = new JPanel();
         panel4.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
@@ -254,12 +301,16 @@ public class MainForm extends JFrame {
         mathRepresentationView = new JTextArea();
         scrollPane1.setViewportView(mathRepresentationView);
         final JPanel panel6 = new JPanel();
-        panel6.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        panel6.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
         panel4.add(panel6, new com.intellij.uiDesigner.core.GridConstraints(0, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         final JScrollPane scrollPane2 = new JScrollPane();
-        panel6.add(scrollPane2, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        panel6.add(scrollPane2, new com.intellij.uiDesigner.core.GridConstraints(1, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        mathLabSolutionView = new JTextArea();
+        scrollPane2.setViewportView(mathLabSolutionView);
+        final JScrollPane scrollPane3 = new JScrollPane();
+        panel6.add(scrollPane3, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         solutionView = new JTextArea();
-        scrollPane2.setViewportView(solutionView);
+        scrollPane3.setViewportView(solutionView);
         final JPanel panel7 = new JPanel();
         panel7.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
         panel1.add(panel7, BorderLayout.SOUTH);
